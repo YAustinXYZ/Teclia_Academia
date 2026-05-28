@@ -6,10 +6,6 @@ import { initDb } from './db/init.js';
 import authRoutes from './routes/auth.js';
 import contentRoutes from './routes/content.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,9 +21,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve uploaded files from Backend/uploads directory
-const uploadsPath = path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(uploadsPath));
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(process.cwd(), 'Backend', 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
