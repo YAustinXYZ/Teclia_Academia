@@ -10,8 +10,6 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminUploadPage from './pages/admin/AdminUploadPage.jsx';
 import AdminContentPage from './pages/admin/AdminContentPage.jsx';
 import FreeResources from './pages/public/FreeResources.jsx';
-import ProfilePage from './pages/dashboard/ProfilePage.jsx';
-import RecursosPage from './pages/dashboard/RecursosPage.jsx';
 
 export const Dashboard = () => (
   <div className="page-shell">
@@ -74,22 +72,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <FreeResources />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/recursos"
-            element={
-              <ProtectedRoute>
-                <RecursosPage />
               </ProtectedRoute>
             }
           />
