@@ -9,6 +9,7 @@ import SignupPage from './pages/auth/SignupPage.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminUploadPage from './pages/admin/AdminUploadPage.jsx';
 import AdminContentPage from './pages/admin/AdminContentPage.jsx';
+import FreeResources from './pages/public/FreeResources.jsx';
 
 export const Dashboard = () => (
   <div className="page-shell">
@@ -63,6 +64,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <AdminContentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/free"
+            element={
+              <ProtectedRoute>
+                <FreeResources />
               </ProtectedRoute>
             }
           />

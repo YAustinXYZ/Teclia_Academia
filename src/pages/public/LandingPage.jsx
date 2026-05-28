@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Logo } from '../../components/common/Logo.jsx';
 
 const navigation = [
   { label: 'Inicio', href: '#inicio' },
@@ -77,13 +78,7 @@ function LandingPage() {
   return (
     <div className="page-shell">
       <header className="topbar" id="inicio">
-        <div className="brand">
-          <span className="brand-mark">T</span>
-          <div>
-            <p className="brand-name">Teclia</p>
-            <p className="brand-tag">Piano learning, refined.</p>
-          </div>
-        </div>
+        <Logo />
         <nav className="nav-links">
           {navigation.map((link) => (
             <a key={link.href} href={link.href}>
@@ -97,29 +92,28 @@ function LandingPage() {
         <section className="hero section-surface">
           <div className="hero-copy">
             <p className="eyebrow">Teclia · Piano training</p>
-            <h1>Aprende piano. Sin límites.</h1>
+            <h1>Aprende piano con precisión y estilo.</h1>
             <p className="hero-text">
-              Teclia es una plataforma de aprendizaje interactivo de piano creada para estudiantes.
-              Minimalismo, claridad y contenido premium en una experiencia de estudio de clase mundial.
+              Clases claras, partituras profesionales y recursos para que el aprendizaje de piano sea directo, elegante y efectivo.
             </p>
             <div className="hero-actions">
               <a className="button button-primary" href="#explora">
-                Comenzar gratis
+                Explorar recursos
               </a>
               <a className="button button-secondary" href="#premium">
-                Ver planes Premium
+                Ver planes
               </a>
             </div>
           </div>
           <div className="hero-panel">
             <div className="hero-card">
-              <span className="hero-badge">Lanzamiento</span>
-              <h2>Tu estudio de piano digital</h2>
-              <p>Accede a lecciones organizadas, partituras y recursos interactivos curados por el instructor.</p>
+              <span className="hero-badge">Nuevo</span>
+              <h2>Una plataforma profesional</h2>
+              <p>Contenido organizado para instructores, músicos y estudiantes que buscan una experiencia de piano más cuidada.</p>
               <ul className="hero-list">
-                <li>Videos y partituras</li>
-                <li>Lecciones organizadas</li>
-                <li>Recursos gratuitos y premium</li>
+                <li>Lecciones estructuradas</li>
+                <li>Recursos listos para compartir</li>
+                <li>Control total del contenido</li>
               </ul>
             </div>
           </div>
@@ -128,20 +122,20 @@ function LandingPage() {
         <section className="section-surface section-grid">
           <div className="section-intro">
             <p className="eyebrow">¿Por qué Teclia?</p>
-            <h2>Una plataforma construida para el aprendizaje musical con estilo.</h2>
+            <h2>Un espacio pensado para aprender y enseñar piano con profesionalismo.</h2>
           </div>
           <div className="feature-grid">
             <article className="feature-card">
-              <h3>Diseño minimalista</h3>
-              <p>Espacios limpios, tipografía precisa y una navegación que invita a concentrarte en el aprendizaje.</p>
+              <h3>Claridad visual</h3>
+              <p>Un diseño limpio que deja el centro de atención en la música y el contenido.</p>
             </article>
             <article className="feature-card">
-              <h3>Recursos estructurados</h3>
-              <p>Lecciones, partituras y ejercicios organizados para un progreso claro y medible.</p>
+              <h3>Contenido organizado</h3>
+              <p>Lecciones, partituras y recursos accesibles con una estructura clara.</p>
             </article>
             <article className="feature-card">
-              <h3>Premium con confianza</h3>
-              <p>Bloquea lecciones, ofrece acceso exclusivo y convierte el aprendizaje en una experiencia valiosa.</p>
+              <h3>Control profesional</h3>
+              <p>Publica, administra y comparte cada recurso desde una interfaz sobria.</p>
             </article>
           </div>
         </section>
@@ -149,9 +143,9 @@ function LandingPage() {
         <section className="section-surface section-studio" id="studio">
           <div>
             <p className="eyebrow">Tu estudio</p>
-            <h2>Contenido curado por el instructor</h2>
+            <h2>Contenido curado para cada práctica.</h2>
             <p className="section-copy">
-              Todos los contenidos son publicados por el instructor. Los estudiantes acceden a lecciones interactivas y materiales cuidadosamente seleccionados.
+              Recursos bien organizados para que el alumno avance con confianza y el instructor mantenga una imagen profesional.
             </p>
           </div>
           <div className="studio-grid">
@@ -220,16 +214,16 @@ function LandingPage() {
         <section className="section-surface section-about" id="contacto">
           <div className="about-copy">
             <p className="eyebrow">Conecta conmigo</p>
-            <h2>Teclia está construyéndose para ser tu escuela de piano online.</h2>
-            <p>Mi nombre es [Tu Nombre], este proyecto será tu plataforma de aprendizaje y espacio de crecimiento musical.</p>
+            <h2>Teclia se construye como tu próxima escuela de piano.</h2>
+            <p>Una experiencia elegante y profesional para estudiantes y creadores que valoran contenido claro y bien presentado.</p>
             <div className="contact-cards">
               <div className="contact-card">
                 <p className="contact-label">Teléfono</p>
-                <p className="contact-value">+57 300 000 0000</p>
+                <p className="contact-value">+506 62608415</p>
               </div>
               <div className="contact-card">
                 <p className="contact-label">Email</p>
-                <p className="contact-value">hola@teclia.com</p>
+                <p className="contact-value">austinrmz2007@gmail.com</p>
               </div>
             </div>
           </div>
@@ -248,7 +242,8 @@ function LandingPage() {
       <footer className="footer">
         <div>
           <p className="footer-logo">Teclia</p>
-          <p>Democratizando el aprendizaje del piano con elegancia y tecnología.</p>
+          <p>© 2026 Teclia. Todos los derechos reservados.</p>
+          <p className="footer-copy">Aprendizaje de piano con estilo profesional y contenidos claros.</p>
         </div>
         <div className="footer-links">
           <a href="#inicio">Inicio</a>

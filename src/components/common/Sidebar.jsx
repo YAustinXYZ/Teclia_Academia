@@ -36,12 +36,6 @@ export const Sidebar = () => {
         >
           Gestor de contenido
         </Link>
-        <Link
-          to="/admin/users"
-          className={`sidebar-link ${isActive('/admin/users') ? 'active' : ''}`}
-        >
-          Usuarios
-        </Link>
       </nav>
     </aside>
   );

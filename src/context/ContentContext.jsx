@@ -27,6 +27,20 @@ export const ContentProvider = ({ children }) => {
     }
   };
 
+  const loadFreeContent = async () => {
+    try {
+      setLoading(true);
+      const res = await contentService.getFreeContent();
+      setContent(res.data.content || []);
+      setError(null);
+    } catch (err) {
+      setError('Error loading free content');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addContent = (newContent) => {
     setContent([newContent, ...content]);
   };
@@ -36,7 +50,7 @@ export const ContentProvider = ({ children }) => {
   };
 
   return (
-    <ContentContext.Provider value={{ content, loading, error, loadContent, addContent, removeContent }}>
+    <ContentContext.Provider value={{ content, loading, error, loadContent, loadFreeContent, addContent, removeContent }}>
       {children}
     </ContentContext.Provider>
   );

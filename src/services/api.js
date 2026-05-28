@@ -34,6 +34,8 @@ export const contentService = {
     api.get('/content'),
   getContentById: (id) =>
     api.get(`/content/${id}`),
+  getFreeContent: () =>
+    api.get('/content/free'),
 };
 
 export default api;

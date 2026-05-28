@@ -32,7 +32,7 @@ export const AdminUploadPage = () => {
       <div className="dashboard-main">
         <div className="dashboard-header">
           <h1>Gestionar contenido</h1>
-          <p>Agrega videos, PDFs, audios o imágenes para la plataforma (solo administrador)</p>
+          <p>Publica recursos claros y profesionales para tu comunidad. Accede a todos los contenidos desde este panel.</p>
         </div>
 
         <div className="admin-grid">
