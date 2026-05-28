@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { Logo } from './Logo.jsx';
+import { useState } from 'react';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -17,18 +19,12 @@ export const Navbar = () => {
         <Link to="/" className="navbar-brand">
           <Logo />
         </Link>
-        <div className="header-extra">
-          <Link to="/free" className="button button-ghost free-pill">Gratis</Link>
-        </div>
 
         <div className="navbar-menu">
           {user ? (
             <div className="navbar-user">
-              <span className="user-name">{user.name}</span>
-              <span className="user-role">{user.role === 'admin' ? 'Admin' : 'Estudiante'}</span>
-
               <div className="navbar-links-inline">
-                <Link to="/dashboard" className="button button-ghost">Dashboard</Link>
+                <Link to="/recursos" className="button button-ghost">Recursos</Link>
                 {user.role === 'admin' && (
                   <>
                     <Link to="/admin" className="button button-ghost">Panel</Link>
@@ -36,10 +32,40 @@ export const Navbar = () => {
                   </>
                 )}
               </div>
-
-              <button onClick={handleLogout} className="button button-secondary navbar-logout">
-                Logout
-              </button>
+              <span className="user-role">{user.role === 'admin' ? 'Admin' : 'Estudiante'}</span>
+              
+              <div className="settings-dropdown-container">
+                <button 
+                  className="button button-settings" 
+                  title="Configuración"
+                  onClick={() => setSettingsOpen(!settingsOpen)}
+                >
+                  ⚙️
+                </button>
+                {settingsOpen && (
+                  <div className="settings-dropdown">
+                    <Link to="/profile" className="settings-option" onClick={() => setSettingsOpen(false)}>
+                      👤 Mi Perfil
+                    </Link>
+                    <Link to="/profile?tab=security" className="settings-option" onClick={() => setSettingsOpen(false)}>
+                      🔒 Seguridad
+                    </Link>
+                    <Link to="/profile?tab=subscription" className="settings-option" onClick={() => setSettingsOpen(false)}>
+                      ⭐ Suscripción
+                    </Link>
+                    <div className="settings-divider"></div>
+                    <button 
+                      className="settings-option logout-option" 
+                      onClick={() => {
+                        handleLogout();
+                        setSettingsOpen(false);
+                      }}
+                    >
+                      🚪 Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="navbar-links">
