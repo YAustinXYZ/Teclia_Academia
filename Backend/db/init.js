@@ -37,10 +37,18 @@ export const initDb = async () => {
     description TEXT,
     type TEXT NOT NULL,
     url TEXT NOT NULL,
+    is_free INTEGER DEFAULT 0,
     uploaded_by INTEGER NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (uploaded_by) REFERENCES users(id)
   )`);
+
+  // If upgrading from older DB, try to add is_free column (ignored if exists)
+  try {
+    db.run('ALTER TABLE content ADD COLUMN is_free INTEGER DEFAULT 0');
+  } catch (err) {
+    // ignore if column already exists or ALTER not supported
+  }
 
   // Seed users
   const adminPassword = bcryptjs.hashSync('Admin123!', 10);

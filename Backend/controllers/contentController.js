@@ -58,10 +58,18 @@ export const getContentById = (req, res) => {
 
 export const uploadContent = (req, res) => {
   try {
-    const { title, description, type, url } = req.body;
+    const { title, description, type, url, is_free } = req.body;
 
-    if (!title || !type || !url) {
-      return res.status(400).json({ error: 'Title, type and url are required' });
+    // If a file was uploaded via multer, construct its public URL
+    let finalUrl = url;
+    if (req.file) {
+      const host = req.get('host');
+      const protocol = req.protocol;
+      finalUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+    }
+
+    if (!title || !type || !finalUrl) {
+      return res.status(400).json({ error: 'Title, type and url/file are required' });
     }
 
     const db = getDb();
@@ -71,9 +79,11 @@ export const uploadContent = (req, res) => {
       return res.status(401).json({ error: 'Uploader not identified' });
     }
 
+    const freeFlag = is_free === '1' || is_free === 'true' || is_free === 'on' ? 1 : 0;
+
     db.run(
-      'INSERT INTO content (title, description, type, url, uploaded_by) VALUES (?, ?, ?, ?, ?)',
-      [title, description || '', type, url, uploaderId]
+      'INSERT INTO content (title, description, type, url, is_free, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)',
+      [title, description || '', type, finalUrl, freeFlag, uploaderId]
     );
 
     saveDatabase();
@@ -86,7 +96,8 @@ export const uploadContent = (req, res) => {
       title,
       description: description || '',
       type,
-      url,
+      url: finalUrl,
+      is_free: freeFlag,
       uploaded_by: uploaderId,
       created_at: new Date().toISOString()
     };
@@ -112,6 +123,35 @@ export const deleteContent = (req, res) => {
     saveDatabase();
 
     res.json({ message: 'Content deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getFreeContent = (req, res) => {
+  try {
+    const db = getDb();
+
+    const result = db.exec(`
+      SELECT c.*, u.name as uploaded_by_name FROM content c
+      LEFT JOIN users u ON c.uploaded_by = u.id
+      WHERE c.is_free = 1
+      ORDER BY c.created_at DESC
+    `);
+
+    let content = [];
+    if (result.length > 0) {
+      const columns = result[0].columns;
+      content = result[0].values.map(row => {
+        const obj = {};
+        columns.forEach((col, idx) => {
+          obj[col] = row[idx];
+        });
+        return obj;
+      });
+    }
+
+    res.json({ content });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

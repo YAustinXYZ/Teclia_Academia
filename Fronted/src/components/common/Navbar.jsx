@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+import { Logo } from './Logo.jsx';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -14,11 +15,11 @@ export const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          <span className="brand-mark">T</span>
-          <div>
-            <p className="brand-name">Teclia</p>
-          </div>
+          <Logo />
         </Link>
+        <div className="header-extra">
+          <Link to="/free" className="button button-ghost free-pill">Gratis</Link>
+        </div>
 
         <div className="navbar-menu">
           {user ? (

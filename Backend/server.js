@@ -5,6 +5,7 @@ import 'dotenv/config';
 import { initDb } from './db/init.js';
 import authRoutes from './routes/auth.js';
 import contentRoutes from './routes/content.js';
+import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,6 +20,9 @@ if (!process.env.JWT_SECRET) {
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(process.cwd(), 'Backend', 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
