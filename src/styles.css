@@ -41,7 +41,7 @@ button {
 
 .topbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 0;
@@ -989,6 +989,8 @@ h1 {
 /* ==================== Auth & Forms ==================== */
 
 .navbar {
+  position: relative;
+  z-index: 10;
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   padding: 1rem 0;
@@ -1006,16 +1008,11 @@ h1 {
 }
 
 .header-extra {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-left: 0.6rem;
+  display: none;
 }
 
 .free-pill {
-  padding: 0.5rem 0.9rem;
-  border-radius: 999px;
-  font-weight: 700;
+  display: none;
 }
 
 .navbar-brand {
@@ -1041,11 +1038,226 @@ h1 {
 .user-name {
   color: #f5f5f5;
   font-weight: 600;
+  display: none;
 }
 
 .user-role {
   color: #c9a84c;
   font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.button-settings {
+  background: transparent;
+  border: none;
+  color: #c9a84c;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: transform 180ms ease, color 180ms ease;
+  position: relative;
+}
+
+.button-settings:hover {
+  transform: rotate(15deg);
+  color: #e5c158;
+}
+
+/* Settings Dropdown Menu */
+.settings-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.2rem;
+  padding: 0.5rem 0;
+  min-width: 210px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  z-index: 1100;
+  backdrop-filter: blur(12px);
+}
+
+.settings-option {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1.2rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.settings-option:hover {
+  background: rgba(201, 168, 76, 0.15);
+  color: #c9a84c;
+}
+
+.settings-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+.logout-option {
+  color: #ff7d7d;
+}
+
+.logout-option:hover {
+  background: rgba(255, 76, 76, 0.15);
+  color: #ff6b6b;
+}
+
+/* Profile Page */
+.profile-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 2rem;
+}
+
+.profile-tab {
+  background: transparent;
+  border: none;
+  color: #b0b0b0;
+  padding: 1rem 0;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-bottom: 3px solid transparent;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.profile-tab:hover {
+  color: #e5e5e5;
+}
+
+.profile-tab.active {
+  color: #c9a84c;
+  border-bottom-color: #c9a84c;
+}
+
+.profile-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.profile-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.8rem;
+  padding: 1.75rem;
+}
+
+.profile-section h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.4rem;
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.profile-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.profile-field label {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.profile-value {
+  margin: 0;
+  color: #f5f5f5;
+  font-size: 0.95rem;
+}
+
+.role-badge {
+  display: inline-block;
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: #c9a84c;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-active {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.password-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.password-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.password-form label {
+  color: #e5e5e5;
+  font-weight: 600;
+}
+
+.password-form input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  padding: 0.9rem 1.2rem;
+  color: #f5f5f5;
+  transition: border-color 180ms ease;
+}
+
+.password-form input:focus {
+  outline: none;
+  border-color: #c9a84c;
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.subscription-info {
+  display: grid;
+  gap: 1rem;
+}
+
+.sub-label {
+  margin: 0;
+  color: #b0b0b0;
+  font-size: 0.9rem;
+}
+
+.sub-value {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #c9a84c;
+}
+
+.sub-description {
+  margin: 0;
+  color: #d1d1d1;
+  font-size: 0.95rem;
 }
 
 .navbar-logout {

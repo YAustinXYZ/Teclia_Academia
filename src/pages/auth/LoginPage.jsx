@@ -18,7 +18,7 @@ export const LoginPage = () => {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {
@@ -66,7 +66,7 @@ export const LoginPage = () => {
           </form>
 
           <p className="auth-footer">
-            ¿No tienes cuenta? <Link to="/auth/signup">Regístrate aquí</Link>
+            ¿No tienes cuenta? <Link to="/auth/signup">Crea una aquí</Link>
           </p>
 
           <div className="demo-credentials">
