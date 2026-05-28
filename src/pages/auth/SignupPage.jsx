@@ -31,7 +31,7 @@ export const SignupPage = () => {
 
     try {
       await signup(email, password, name);
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed');
     } finally {

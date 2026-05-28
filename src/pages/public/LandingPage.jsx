@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Logo } from '../../components/common/Logo.jsx';
 
 const navigation = [
   { label: 'Inicio', href: '#inicio' },
@@ -78,7 +77,6 @@ function LandingPage() {
   return (
     <div className="page-shell">
       <header className="topbar" id="inicio">
-        <Logo />
         <nav className="nav-links">
           {navigation.map((link) => (
             <a key={link.href} href={link.href}>
@@ -102,6 +100,9 @@ function LandingPage() {
               </a>
               <a className="button button-secondary" href="#premium">
                 Ver planes
+              </a>
+              <a className="button button-secondary" href="/auth/login">
+                Empezar gratis
               </a>
             </div>
           </div>
