@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const BACKEND_BASE_URL = 'http://localhost:3001';
+export const BACKEND_BASE_URL = 'https://teclia-academia-2.onrender.com';
 const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
 const api = axios.create({
