@@ -1,6 +1,6 @@
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import 'dotenv/config';
 import { initDb } from './db/init.js';
 import authRoutes from './routes/auth.js';
@@ -22,11 +22,16 @@ if (!process.env.JWT_SECRET) {
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Ensure upload folders exist
+const uploadsPath = path.join(__dirname, 'uploads');
+const avatarUploadsPath = path.join(uploadsPath, 'avatars');
+fs.mkdirSync(uploadsPath, { recursive: true });
+fs.mkdirSync(avatarUploadsPath, { recursive: true });
 
 // Serve uploaded files from Backend/uploads directory
-const uploadsPath = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadsPath));
 
 // Routes
@@ -50,9 +55,6 @@ initDb()
     console.log('✓ Database initialized');
     app.listen(PORT, () => {
       console.log(`✓ Teclia Backend running on http://localhost:${PORT}`);
-        console.log(`\nTest credentials:`);
-        console.log(`   Admin: admin@teclia.com / Admin123!`);
-        console.log(`   Student: student1@teclia.com / Student123!\n`);
     });
   })
   .catch((err) => {

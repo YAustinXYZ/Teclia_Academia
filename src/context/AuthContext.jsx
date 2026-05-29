@@ -58,6 +58,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = async (name, avatarUrl) => {
+    try {
+      setError(null);
+      const res = await authService.updateProfile(name, avatarUrl);
+      setUser(res.data.user);
+      return res.data;
+    } catch (err) {
+      const message = err.response?.data?.error || 'Profile update failed';
+      setError(message);
+      throw err;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('authToken');
     setUser(null);
@@ -65,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, signup, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );

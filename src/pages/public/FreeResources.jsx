@@ -16,8 +16,8 @@ const FreeResources = () => {
       <section className="section-surface">
         <div className="section-intro">
           <p className="eyebrow">Recursos gratuitos</p>
-          <h2>Contenido gratuito compartido por instructores</h2>
-          <p className="section-copy">Accede a las lecciones que los instructores han marcado como gratuitas.</p>
+          <h2>Contenido gratuito para tu práctica</h2>
+          <p className="section-copy">Accede a una selección de lecciones y recursos pensados para tu aprendizaje.</p>
         </div>
 
         <div className="feature-grid">

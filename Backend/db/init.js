@@ -28,6 +28,9 @@ export const initDb = async () => {
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
     role TEXT DEFAULT 'student',
+    avatar_url TEXT DEFAULT NULL,
+    reset_pin TEXT DEFAULT NULL,
+    reset_pin_expires_at DATETIME DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -43,6 +46,22 @@ export const initDb = async () => {
     FOREIGN KEY (uploaded_by) REFERENCES users(id)
   )`);
 
+  // If upgrading from older DB, try to add new user columns (ignored if exists)
+  try {
+    db.run('ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT NULL');
+  } catch (err) {
+    // ignore if column already exists or ALTER not supported
+  }
+  try {
+    db.run('ALTER TABLE users ADD COLUMN reset_pin TEXT DEFAULT NULL');
+  } catch (err) {
+    // ignore if column already exists or ALTER not supported
+  }
+  try {
+    db.run('ALTER TABLE users ADD COLUMN reset_pin_expires_at DATETIME DEFAULT NULL');
+  } catch (err) {
+    // ignore if column already exists or ALTER not supported
+  }
   // If upgrading from older DB, try to add is_free column (ignored if exists)
   try {
     db.run('ALTER TABLE content ADD COLUMN is_free INTEGER DEFAULT 0');

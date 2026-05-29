@@ -16,7 +16,7 @@ const RecursosPage = () => {
       <section className="section-surface">
         <div className="section-intro">
           <h2>Recursos disponibles</h2>
-          <p className="section-copy">Accede a todos los recursos compartidos por los instructores de Teclia.</p>
+          <p className="section-copy">Accede a los recursos compartidos para tu práctica y avance musical.</p>
         </div>
 
         <ContentGrid

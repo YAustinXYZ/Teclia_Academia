@@ -3,8 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState('admin@teclia.com');
-  const [password, setPassword] = useState('Admin123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -48,16 +49,29 @@ export const LoginPage = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group password-group">
               <label htmlFor="password">Contraseña</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-              />
+              <div className="password-field">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
+
+            <div className="auth-link-row">
+              <Link to="/auth/forgot-password">¿Olvidaste tu contraseña?</Link>
             </div>
 
             <button type="submit" disabled={loading} className="button button-primary button-block">
@@ -66,14 +80,8 @@ export const LoginPage = () => {
           </form>
 
           <p className="auth-footer">
-            ¿No tienes cuenta? <Link to="/auth/signup">Crea una aquí</Link>
+            ¿No tienes cuenta? <Link to="/auth/signup">Regístrate como estudiante</Link>
           </p>
-
-          <div className="demo-credentials">
-            <p className="demo-title">Credenciales de demo:</p>
-            <p><strong>Admin:</strong> admin@teclia.com / Admin123!</p>
-            <p><strong>Estudiante:</strong> student1@teclia.com / Student123!</p>
-          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+export const BACKEND_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -27,6 +28,26 @@ export const authService = {
     api.post('/auth/logout'),
   getCurrentUser: () =>
     api.get('/auth/me'),
+  updateProfile: (name, avatar) => {
+    if (avatar instanceof FormData) {
+      return api.patch('/auth/profile', avatar, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    }
+
+    const payload = {};
+    if (name) payload.name = name;
+    if (avatar) payload.avatarUrl = avatar;
+    return api.patch('/auth/profile', payload);
+  },
+  changePassword: (currentPassword, newPassword) =>
+    api.post('/auth/change-password', { currentPassword, newPassword }),
+  forgotPassword: (email) =>
+    api.post('/auth/forgot-password', { email }),
+  resetPassword: (email, pin, newPassword) =>
+    api.post('/auth/reset-password', { email, pin, newPassword }),
 };
 
 export const contentService = {

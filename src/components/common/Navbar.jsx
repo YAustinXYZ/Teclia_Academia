@@ -17,7 +17,7 @@ export const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          <Logo />
+          
         </Link>
 
         <div className="navbar-menu">
@@ -27,12 +27,14 @@ export const Navbar = () => {
                 <Link to="/recursos" className="button button-ghost">Recursos</Link>
                 {user.role === 'admin' && (
                   <>
-                    <Link to="/admin" className="button button-ghost">Panel</Link>
+                    <Link to="/admin" className="button button-ghost">Mi escuela</Link>
                     <Link to="/admin/upload" className="button button-ghost">Gestionar contenido</Link>
                   </>
                 )}
               </div>
-              <span className="user-role">{user.role === 'admin' ? 'Admin' : 'Estudiante'}</span>
+              <span className="user-role">
+                {user.role === 'admin' ? '👑 Instructor' : user.role === 'premium' ? '✨ Alumno premium' : '🎓 Estudiante'}
+              </span>
               
               <div className="settings-dropdown-container">
                 <button 
@@ -70,10 +72,10 @@ export const Navbar = () => {
           ) : (
             <div className="navbar-links">
               <Link to="/auth/login" className="button button-secondary">
-                Login
+                Iniciar sesión
               </Link>
               <Link to="/auth/signup" className="button button-primary">
-                Signup
+                Registro de alumnos
               </Link>
             </div>
           )}

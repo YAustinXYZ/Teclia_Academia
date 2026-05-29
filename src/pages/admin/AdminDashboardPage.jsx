@@ -22,8 +22,8 @@ export const AdminDashboardPage = () => {
         <div className="dashboard-header">
           <div className="dashboard-header-inner">
             <div>
-              <h1>Panel administrativo</h1>
-              <p>Bienvenido, {user?.name}. Gestiona la plataforma desde aquí</p>
+              <h1>Panel del instructor</h1>
+              <p>Bienvenido, {user?.name}. Gestiona tus lecciones y recursos para los estudiantes.</p>
             </div>
             <div className="account-card">
               <div className="account-avatar">{user?.name?.charAt(0) || 'U'}</div>

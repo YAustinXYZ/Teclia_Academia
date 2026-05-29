@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
+import { Logo } from '../../components/common/Logo.jsx';
 
 const navigation = [
   { label: 'Inicio', href: '#inicio' },
-  { label: 'Explora', href: '#explora' },
-  { label: 'Premium', href: '#premium' },
-  { label: 'Studio', href: '#studio' },
+  { label: 'Recursos', href: '#explora' },
+  { label: 'Planes', href: '#premium' },
+  { label: 'Mi escuela', href: '#studio' },
   { label: 'Contacto', href: '#contacto' },
 ];
 
@@ -32,29 +33,203 @@ const premiumPlans = [
     label: 'Básico',
     price: '$9.99',
     features: ['Acceso a recursos', 'Lecciones guiadas', 'Comunidad privada'],
+    details: 'Un plan ideal para comenzar, con acceso completo a recursos y una comunidad dedicada al aprendizaje.',
   },
   {
     label: 'Pro',
     price: '$24.99',
     features: ['Feedback de IA', 'Clases 1:1', 'Partituras exclusivas'],
     highlight: true,
+    details: 'El plan más equilibrado para acelerar tu progreso con apoyo guiado y contenido exclusivo.',
   },
   {
     label: 'Master',
     price: '$49.99',
     features: ['Plan personalizado', 'Sesiones premium', 'Análisis avanzado'],
+    details: 'Para quienes quieren una experiencia VIP completa con seguimiento premium y soporte prioritario.',
   },
 ];
 
-const scaleOptions = [
-  { name: 'Mayor', notes: 'C D E F G A B' },
-  { name: 'Menor', notes: 'C D Eb F G Ab Bb' },
-  { name: 'Pentatónica', notes: 'C D E G A' },
-  { name: 'Blues', notes: 'C Eb F Gb G Bb' },
+const rootNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const scaleTypes = [
+  {
+    name: 'Mayor',
+    formula: [2, 2, 1, 2, 2, 2, 1],
+    description: 'Escala mayor clásica para prácticas brillantes y melodías claras.',
+  },
+  {
+    name: 'Menor natural',
+    formula: [2, 1, 2, 2, 1, 2, 2],
+    description: 'Escala menor natural con carácter profundo y expresivo.',
+  },
+  {
+    name: 'Menor armónica',
+    formula: [2, 1, 2, 2, 1, 3, 1],
+    description: 'Escala menor armónica con un color más dramático y resonante.',
+  },
+  {
+    name: 'Pentatónica mayor',
+    formula: [2, 2, 3, 2, 3],
+    description: 'Escala abierta, ideal para improvisar con fluidez desde el comienzo.',
+  },
+  {
+    name: 'Blues',
+    formula: [3, 2, 1, 1, 3, 2],
+    description: 'Escala de blues con color y estilo moderno para explorar nuevos sonidos.',
+  },
 ];
 
 function LandingPage() {
-  const [selectedScale, setSelectedScale] = useState(scaleOptions[0]);
+  const [selectedRoot, setSelectedRoot] = useState('C');
+  const [selectedScaleType, setSelectedScaleType] = useState(scaleTypes[0]);
+  const [activePlan, setActivePlan] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [paymentInfo, setPaymentInfo] = useState({ cardNumber: '', expiry: '', cvc: '' });
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const audioContextRef = useRef(null);
+  const audioStartedRef = useRef(false);
+
+  const selectedScaleNotes = useMemo(() => {
+    const allNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const rootIndex = allNotes.indexOf(selectedRoot);
+    const notes = [selectedRoot];
+    let index = rootIndex;
+    selectedScaleType.formula.forEach((step) => {
+      index = (index + step) % 12;
+      notes.push(allNotes[index]);
+    });
+    return notes;
+  }, [selectedRoot, selectedScaleType]);
+
+  const selectedScale = useMemo(() => ({
+    name: `${selectedRoot} ${selectedScaleType.name}`,
+    notes: selectedScaleNotes,
+    description: selectedScaleType.description,
+  }), [selectedRoot, selectedScaleType, selectedScaleNotes]);
+
+  const playAmbientAura = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const audioCtx = audioContextRef.current || new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    audioContextRef.current = audioCtx;
+    const now = audioCtx.currentTime;
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+
+    osc1.type = 'sine';
+    osc2.type = 'triangle';
+    osc1.frequency.value = 110;
+    osc2.frequency.value = 110;
+    osc2.detune.value = -5;
+    filter.type = 'lowpass';
+    filter.frequency.value = 420;
+    filter.Q.value = 0.7;
+
+    gain.gain.setValueAtTime(0.00003, now);
+    gain.gain.linearRampToValueAtTime(0.007, now + 1.8);
+    gain.gain.setTargetAtTime(0.005, now + 2.5, 4);
+    gain.gain.exponentialRampToValueAtTime(0.00001, now + 9);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 9);
+    osc2.stop(now + 9);
+  };
+
+  const startAmbient = () => {
+    if (audioStartedRef.current) return;
+    audioStartedRef.current = true;
+    try {
+      playAmbientAura();
+    } catch (err) {
+      // Autoplay may be blocked until the user interacts.
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startAmbient();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const playPianoNote = (noteLabel) => {
+    const noteFrequencies = {
+      C: 261.63,
+      'C#': 277.18,
+      D: 293.66,
+      'D#': 311.13,
+      E: 329.63,
+      F: 349.23,
+      'F#': 369.99,
+      G: 392.0,
+      'G#': 415.3,
+      A: 440.0,
+      'A#': 466.16,
+      B: 493.88,
+    };
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const audioCtx = audioContextRef.current || new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    audioContextRef.current = audioCtx;
+    const now = audioCtx.currentTime;
+    const frequency = noteFrequencies[noteLabel] || 440;
+
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 1800;
+    filter.Q.value = 1.1;
+
+    gain.gain.setValueAtTime(0.00005, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.02, now + 0.22);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    osc1.type = 'triangle';
+    osc2.type = 'sine';
+    osc1.frequency.value = frequency;
+    osc2.frequency.value = frequency;
+    osc2.detune.value = 10;
+
+    const noise = audioCtx.createBufferSource();
+    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+    const channelData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < channelData.length; i += 1) {
+      channelData[i] = (Math.random() * 2 - 1) * 0.002;
+    }
+    noise.buffer = noiseBuffer;
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.008, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.00005, now + 0.18);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    noise.connect(noiseGain);
+    noiseGain.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    noise.start(now);
+
+    osc1.stop(now + 1.4);
+    osc2.stop(now + 1.4);
+    noise.stop(now + 0.18);
+  };
 
   const keyboardKeys = useMemo(
     () => [
@@ -77,6 +252,9 @@ function LandingPage() {
   return (
     <div className="page-shell">
       <header className="topbar" id="inicio">
+        <div className="brand logo-brand">
+          <Logo size={36} />
+        </div>
         <nav className="nav-links">
           {navigation.map((link) => (
             <a key={link.href} href={link.href}>
@@ -89,20 +267,20 @@ function LandingPage() {
       <main>
         <section className="hero section-surface">
           <div className="hero-copy">
-            <p className="eyebrow">Teclia · Piano training</p>
-            <h1>Aprende piano con precisión y estilo.</h1>
+            <p className="eyebrow">Teclia · Academia de piano</p>
+            <h1>Aprende piano directamente con tu profesor.</h1>
             <p className="hero-text">
-              Clases claras, partituras profesionales y recursos para que el aprendizaje de piano sea directo, elegante y efectivo.
+              Mis lecciones y recursos están diseñados para que los estudiantes practiquen con claridad.
             </p>
             <div className="hero-actions">
               <a className="button button-primary" href="#explora">
-                Explorar recursos
+                Ver recursos
               </a>
               <a className="button button-secondary" href="#premium">
                 Ver planes
               </a>
               <a className="button button-secondary" href="/auth/login">
-                Empezar gratis
+                Ingresar como alumno
               </a>
             </div>
           </div>
@@ -110,11 +288,11 @@ function LandingPage() {
             <div className="hero-card">
               <span className="hero-badge">Nuevo</span>
               <h2>Una plataforma profesional</h2>
-              <p>Contenido organizado para instructores, músicos y estudiantes que buscan una experiencia de piano más cuidada.</p>
+              <p>Contenido preparado para que los estudiantes avancen con confianza y enfoque.</p>
               <ul className="hero-list">
-                <li>Lecciones estructuradas</li>
-                <li>Recursos listos para compartir</li>
-                <li>Control total del contenido</li>
+                <li>Lecciones estructuradas para alumnos</li>
+                <li>Recursos listos para tu escuela</li>
+                <li>Control total sobre cada lección</li>
               </ul>
             </div>
           </div>
@@ -146,7 +324,7 @@ function LandingPage() {
             <p className="eyebrow">Tu estudio</p>
             <h2>Contenido curado para cada práctica.</h2>
             <p className="section-copy">
-              Recursos bien organizados para que el alumno avance con confianza y el instructor mantenga una imagen profesional.
+              Recursos bien organizados para que avances con confianza y disfrutes una práctica clara y profesional.
             </p>
           </div>
           <div className="studio-grid">
@@ -162,8 +340,8 @@ function LandingPage() {
         <section className="section-surface section-preview" id="premium">
           <div className="preview-copy">
             <p className="eyebrow">Teclia Pro</p>
-            <h2>Experiencia premium para alumnos y creadores</h2>
-            <p>Acceso a planes, análisis de progreso, clases 1:1 y contenido exclusivo con una presentación cuidada al detalle.</p>
+            <h2>Experiencia premium para alumnos motivados</h2>
+            <p>Accede a planes, análisis de progreso y contenido premium para mejorar tu práctica.</p>
           </div>
           <div className="pricing-grid">
             {premiumPlans.map((plan) => (
@@ -176,9 +354,110 @@ function LandingPage() {
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
-                <button className="button button-outline">Elegir plan</button>
+                <div className="plan-actions">
+                  <button
+                    type="button"
+                    className="button button-primary plan-buy-button"
+                    onClick={() => {
+                      setSelectedPlan(plan.label);
+                      setActivePlan(plan.label);
+                      setPaymentStatus(null);
+                      setTimeout(() => {
+                        document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }, 150);
+                    }}
+                  >
+                    Comprar {plan.label}
+                  </button>
+                  <button
+                    type="button"
+                    className="button button-outline"
+                    onClick={() => setActivePlan(activePlan === plan.label ? null : plan.label)}
+                  >
+                    {activePlan === plan.label ? 'Ocultar detalles' : 'Más información'}
+                  </button>
+                </div>
+                {activePlan === plan.label && (
+                  <div className="plan-extra">
+                    <p>{plan.details}</p>
+                  </div>
+                )}
               </div>
             ))}
+          </div>
+
+          <div className="payment-section" id="payment-section">
+            <div className="payment-panel">
+              <div className="payment-panel-header">
+                <h2>Compra tu plan</h2>
+                <p>Selecciona un plan y completa los datos de la tarjeta para avanzar. Esto te ayuda a ver el flujo de pago con claridad.</p>
+              </div>
+
+              {selectedPlan ? (
+                <>
+                  <div className="selected-plan-card">Plan seleccionado: <strong>{selectedPlan}</strong></div>
+                  <form className="payment-form" onSubmit={(e) => {
+                    e.preventDefault();
+                    const raw = paymentInfo.cardNumber.replace(/\s+/g, '');
+                    if (!/^[0-9]{16}$/.test(raw)) {
+                      setPaymentStatus({ type: 'error', message: 'Ingresa un número de tarjeta válido de 16 dígitos.' });
+                      return;
+                    }
+                    if (!/^[0-9]{2}\/([0-9]{2})$/.test(paymentInfo.expiry)) {
+                      setPaymentStatus({ type: 'error', message: 'Ingresa fecha de expiración en formato MM/AA.' });
+                      return;
+                    }
+                    if (!/^[0-9]{3,4}$/.test(paymentInfo.cvc)) {
+                      setPaymentStatus({ type: 'error', message: 'Ingresa un CVC válido de 3 o 4 dígitos.' });
+                      return;
+                    }
+                    setPaymentStatus({ type: 'success', message: `Pago simulado recibido para ${selectedPlan}. Gracias por tu compra.` });
+                  }}>
+                    <div className="payment-row">
+                      <label>
+                        Número de tarjeta
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0000 0000 0000 0000"
+                          value={paymentInfo.cardNumber}
+                          onChange={(e) => setPaymentInfo((prev) => ({ ...prev, cardNumber: e.target.value }))}
+                          required
+                        />
+                      </label>
+                      <label>
+                        Expiración
+                        <input
+                          type="text"
+                          placeholder="MM/AA"
+                          value={paymentInfo.expiry}
+                          onChange={(e) => setPaymentInfo((prev) => ({ ...prev, expiry: e.target.value }))}
+                          required
+                        />
+                      </label>
+                      <label>
+                        CVC
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="123"
+                          value={paymentInfo.cvc}
+                          onChange={(e) => setPaymentInfo((prev) => ({ ...prev, cvc: e.target.value }))}
+                          required
+                        />
+                      </label>
+                    </div>
+                    <button type="submit" className="button button-primary">Pagar ahora</button>
+                    {paymentStatus && (
+                      <div className={`payment-status ${paymentStatus.type}`}>{paymentStatus.message}</div>
+                    )}
+                    <p className="payment-note">Pago simulado. La pasarela real se integrará en la siguiente fase.</p>
+                  </form>
+                </>
+              ) : (
+                <p className="payment-hint">Haz clic en "Comprar" en alguno de los planes para ver el formulario de pago.</p>
+              )}
+            </div>
           </div>
         </section>
 
@@ -187,28 +466,64 @@ function LandingPage() {
             <p className="eyebrow">Explora</p>
             <h2>Recursos gratuitos que hacen que aprender sea intuitivo.</h2>
             <p>Biblioteca de escalas, teoría musical, notas en pentagrama y ejercicios interactivos. Todo en un solo lugar.</p>
+            <div className="scale-sign-selector">
+              {rootNotes.map((note) => (
+                <button
+                  key={note}
+                  type="button"
+                  className={`scale-sign ${note === selectedRoot ? 'active' : ''}`}
+                  onClick={() => setSelectedRoot(note)}
+                >
+                  {note}
+                </button>
+              ))}
+            </div>
             <div className="scale-selector">
-              {scaleOptions.map((scale) => (
+              {scaleTypes.map((scale) => (
                 <button
                   key={scale.name}
-                  className={scale.name === selectedScale.name ? 'scale-button active' : 'scale-button'}
-                  onClick={() => setSelectedScale(scale)}
+                  className={scale.name === selectedScaleType.name ? 'scale-button active' : 'scale-button'}
+                  onClick={() => setSelectedScaleType(scale)}
                 >
                   {scale.name}
                 </button>
               ))}
             </div>
-            <p className="scale-details">Notas: {selectedScale.notes}</p>
+            <div className="scale-details">
+              <p className="scale-description">{selectedScale.description}</p>
+              <div className="scale-notes">
+                {selectedScale.notes.map((note) => (
+                  <span key={note} className="scale-note">{note}</span>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="keyboard-shell">
-            <div className="keyboard">
-              {keyboardKeys.map((key) => (
-                <button key={key.label} className={`piano-key ${key.type}`} type="button">
-                  {key.type === 'white' ? key.label : ''}
-                </button>
-              ))}
+            <div className="keyboard-actions">
+              <button type="button" className="button button-secondary" onClick={startAmbient}>
+                Activar sonido de ambiente
+              </button>
             </div>
-            <p className="keyboard-caption">Teclado interactivo — toca cada nota con el cursor.</p>
+            <div className="keyboard">
+              {keyboardKeys.map((key) => {
+                const scaleNotes = new Set(selectedScale.notes);
+                const isActive = scaleNotes.has(key.label);
+                return (
+                  <button
+                    key={key.label}
+                    className={`piano-key ${key.type} ${isActive ? 'active' : ''}`}
+                    type="button"
+                    onClick={() => {
+                      startAmbient();
+                      playPianoNote(key.label);
+                    }}
+                  >
+                    <span>{key.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="keyboard-caption">Presiona cualquier tecla para activar el audio y escuchar cada nota.</p>
           </div>
         </section>
 

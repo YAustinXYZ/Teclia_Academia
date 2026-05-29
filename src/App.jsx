@@ -6,6 +6,8 @@ import { Navbar } from './components/common/Navbar.jsx';
 import LandingPage from './pages/public/LandingPage.jsx';
 import LoginPage from './pages/auth/LoginPage.jsx';
 import SignupPage from './pages/auth/SignupPage.jsx';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminUploadPage from './pages/admin/AdminUploadPage.jsx';
 import AdminContentPage from './pages/admin/AdminContentPage.jsx';
@@ -37,6 +39,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/signup" element={<SignupPage />} />
+          <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/dashboard"
             element={
