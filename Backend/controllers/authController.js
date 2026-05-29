@@ -10,18 +10,15 @@ const generateToken = (userId, role) => {
 };
 
 const createMailTransport = () => {
-  if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS.replace(/\s/g, ''),
-      },
-      requireTLS: true,
-    });
-  }
+  return nodemailer.createTransport({
+    host: 'smtp.sendgrid.net',
+    port: 587,
+    auth: {
+      user: 'apikey',
+      pass: process.env.SENDGRID_API_KEY,
+    },
+  });
+};
 
   return {
     sendMail: async (mailOptions) => {
