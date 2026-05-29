@@ -32,6 +32,7 @@ const createMailTransport = () => {
 
 const sendResetPinEmail = async (email, pin) => {
   const transport = createMailTransport();
+
   const mailOptions = {
     from: process.env.EMAIL_FROM || 'no-reply@teclia.com',
     to: email,
@@ -40,7 +41,15 @@ const sendResetPinEmail = async (email, pin) => {
     html: `<p>Tu código para restablecer la contraseña es: <strong>${pin}</strong>.</p><p>Este código expira en 15 minutos.</p>`,
   };
 
-  await transport.sendMail(mailOptions);
+  console.log('📨 Sending email to:', email);
+
+  try {
+    await transport.sendMail(mailOptions);
+    console.log('✅ Email sent successfully');
+  } catch (error) {
+    console.error('❌ Email error:', error);
+    throw error;
+  }
 };
 
 export const signup = (req, res) => {
