@@ -14,22 +14,13 @@ const createMailTransport = () => {
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT) || 587,
-      secure: false,
+      secure: process.env.EMAIL_SECURE === 'true',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS.replace(/\s/g, ''),
+        pass: process.env.EMAIL_PASS,
       },
-      requireTLS: true,
     });
   }
-
-  return {
-    sendMail: async (mailOptions) => {
-      console.log('Simulated email send:', mailOptions);
-      return Promise.resolve();
-    },
-  };
-};
 
   return {
     sendMail: async (mailOptions) => {
@@ -53,16 +44,15 @@ const sendResetPinEmail = async (email, pin) => {
   console.log('📨 Sending email to:', email);
 
   try {
-    if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  await sendResetPinEmail(email, pin);
-} else {
-  console.log("SMTP no configurado");
-}
+    await transport.sendMail(mailOptions);
     console.log('✅ Email sent successfully');
   } catch (error) {
     console.error('❌ Email error:', error);
     throw error;
   }
+};
+
+  await transport.sendMail(mailOptions);
 };
 
 export const signup = (req, res) => {
@@ -317,4 +307,3 @@ export const resetPassword = (req, res) => {
 export const logout = (req, res) => {
   res.json({ message: 'Logout successful' });
 };
-
