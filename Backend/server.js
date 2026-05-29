@@ -26,7 +26,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Ensure upload folders exist
-const uploadsPath = path.join(__dirname, 'uploads');
+const uploadsPath = process.env.RENDER
+  ? '/tmp/uploads'
+  : path.join(__dirname, 'uploads');
 const avatarUploadsPath = path.join(uploadsPath, 'avatars');
 fs.mkdirSync(uploadsPath, { recursive: true });
 fs.mkdirSync(avatarUploadsPath, { recursive: true });
