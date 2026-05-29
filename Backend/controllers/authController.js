@@ -20,19 +20,11 @@ const createMailTransport = () => {
   });
 };
 
-  return {
-    sendMail: async (mailOptions) => {
-      console.log('Simulated email send:', mailOptions);
-      return Promise.resolve();
-    },
-  };
-};
-
 const sendResetPinEmail = async (email, pin) => {
   const transport = createMailTransport();
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'no-reply@teclia.com',
+    from: process.env.EMAIL_FROM || 'austincomputadora@gmail.com',
     to: email,
     subject: 'Tu código para recuperar contraseña de Teclia',
     text: `Tu código para restablecer la contraseña es: ${pin}. Este código expira en 15 minutos.`,
@@ -61,7 +53,6 @@ export const signup = (req, res) => {
 
     const db = getDb();
 
-    // Check if user exists
     const existingUser = db.exec('SELECT id FROM users WHERE email = ?', [email]);
     if (existingUser.length > 0 && existingUser[0].values.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
@@ -76,7 +67,6 @@ export const signup = (req, res) => {
 
     saveDatabase();
 
-    // Get the last inserted user ID
     const result = db.exec('SELECT last_insert_rowid() as id');
     const userId = result[0].values[0][0];
 
@@ -244,18 +234,9 @@ export const forgotPassword = async (req, res) => {
     db.run('UPDATE users SET reset_pin = ?, reset_pin_expires_at = ? WHERE email = ?', [pin, expiresAt, email]);
     saveDatabase();
 
-    const emailEnabled = process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS;
     await sendResetPinEmail(email, pin);
 
-    const response = {
-      message: 'Se ha enviado un PIN de recuperación al correo electrónico',
-    };
-
-    if (!emailEnabled) {
-      response.message = 'Email no configurado. Por favor, configura SMTP real para enviar el PIN a tu correo.';
-    }
-
-    res.json(response);
+    res.json({ message: 'Se ha enviado un PIN de recuperación al correo electrónico' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
