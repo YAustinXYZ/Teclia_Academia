@@ -1,6 +1,6 @@
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { getDb, saveDatabase } from '../db/init.js';
 
 const generateToken = (userId, role) => {
@@ -21,11 +21,11 @@ const createMailTransport = () => {
 };
 
 const sendResetPinEmail = async (email, pin) => {
-  const transport = createMailTransport();
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-  const mailOptions = {
-    from: process.env.EMAIL_FROM || 'austincomputadora@gmail.com',
+  const msg = {
     to: email,
+    from: 'austincomputadora@gmail.com',
     subject: 'Tu código para recuperar contraseña de Teclia',
     text: `Tu código para restablecer la contraseña es: ${pin}. Este código expira en 15 minutos.`,
     html: `<p>Tu código para restablecer la contraseña es: <strong>${pin}</strong>.</p><p>Este código expira en 15 minutos.</p>`,
@@ -34,14 +34,13 @@ const sendResetPinEmail = async (email, pin) => {
   console.log('📨 Sending email to:', email);
 
   try {
-    await transport.sendMail(mailOptions);
+    await sgMail.send(msg);
     console.log('✅ Email sent successfully');
   } catch (error) {
-    console.error('❌ Email error:', error);
+    console.error('❌ Email error:', error.response?.body || error);
     throw error;
   }
 };
-
 
 export const signup = (req, res) => {
   try {
