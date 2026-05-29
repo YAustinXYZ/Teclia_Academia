@@ -53,9 +53,9 @@ app.use((err, req, res, next) => {
 initDb()
   .then(() => {
     console.log('✓ Database initialized');
-    app.listen(PORT, () => {
-      console.log(`✓ Teclia Backend running on http://localhost:${PORT}`);
-    });
+    app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✓ Teclia Backend running on port ${PORT}`);
+});
   })
   .catch((err) => {
     console.error('✗ Failed to initialize database:', err);
