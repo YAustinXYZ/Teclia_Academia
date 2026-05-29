@@ -53,8 +53,6 @@ const sendResetPinEmail = async (email, pin) => {
   }
 };
 
-  await transport.sendMail(mailOptions);
-};
 
 export const signup = (req, res) => {
   try {
