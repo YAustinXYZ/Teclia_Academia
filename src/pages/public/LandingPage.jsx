@@ -550,7 +550,7 @@ function LandingPage() {
           <div className="social-panel">
             <p className="social-title">Redes sociales</p>
             <div className="social-links">
-              <a href="#" aria-label="Instagram">Instagram</a>
+              <a href="https://www.instagram.com/tecliaacademy?utm_source=qr" aria-label="Instagram">Instagram</a>
               <a href="#" aria-label="YouTube">YouTube</a>
               <a href="#" aria-label="TikTok">TikTok</a>
               <a href="#" aria-label="LinkedIn">LinkedIn</a>
@@ -568,7 +568,7 @@ function LandingPage() {
           <a href="#inicio">Inicio</a>
           <a href="#explora">Explora</a>
           <a href="#premium">Premium</a>
-          <a href="https://www.instagram.com/tecliaacademy?utm_source=qr">Contacto</a>
+          <a href="#contacto">Contacto</a>
         </div>
       </footer>
     </div>
