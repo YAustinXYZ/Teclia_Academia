@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useContent } from '../../context/ContentContext.jsx';
+import { BACKEND_BASE_URL } from '../../services/api.js';
+import { CONTENT_PLANS } from '../../utils/plans.js';
 
 export const UploadForm = () => {
   const [title, setTitle] = useState('');
@@ -8,7 +10,7 @@ export const UploadForm = () => {
   const [type, setType] = useState('video');
   const [url, setUrl] = useState('');
   const [file, setFile] = useState(null);
-  const [isFree, setIsFree] = useState(false);
+  const [planTier, setPlanTier] = useState('free');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -35,9 +37,10 @@ export const UploadForm = () => {
       form.append('type', type);
       if (url) form.append('url', url);
       if (file) form.append('file', file);
-      form.append('is_free', isFree ? '1' : '0');
+      form.append('plan_tier', planTier);
+      form.append('is_free', planTier === 'free' ? '1' : '0');
 
-      const res = await axios.post('http://localhost:3001/api/content/upload', form, {
+      const res = await axios.post(`${BACKEND_BASE_URL}/api/content/upload`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -50,7 +53,7 @@ export const UploadForm = () => {
       setUrl('');
       setType('video');
       setFile(null);
-      setIsFree(false);
+      setPlanTier('free');
 
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -63,7 +66,7 @@ export const UploadForm = () => {
   return (
     <form onSubmit={handleSubmit} className="upload-form">
       <h2>Añadir contenido</h2>
-      <p className="hint">Sube tu lección en video, PDF, audio o imagen. Usa títulos claros y enlaces directos.</p>
+      <p className="hint">Sube tu lección y elige para qué plan estará disponible.</p>
 
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">Contenido agregado correctamente.</div>}
@@ -101,6 +104,16 @@ export const UploadForm = () => {
             <option value="image">Imagen</option>
           </select>
         </div>
+        <div className="form-group">
+          <label htmlFor="planTier">Plan requerido</label>
+          <select id="planTier" value={planTier} onChange={(e) => setPlanTier(e.target.value)}>
+            {CONTENT_PLANS.map((plan) => (
+              <option key={plan.value} value={plan.value}>
+                {plan.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="form-group">
@@ -117,13 +130,6 @@ export const UploadForm = () => {
       <div className="form-group">
         <label htmlFor="file">Archivo (video/pdf/audio/imagen)</label>
         <input id="file" type="file" onChange={(e) => setFile(e.target.files[0] || null)} accept="video/*,application/pdf,audio/*,image/*" />
-      </div>
-
-      <div className="form-group">
-        <label>
-          <input type="checkbox" checked={isFree} onChange={(e) => setIsFree(e.target.checked)} />{' '}
-          Gratis (disponible para todos)
-        </label>
       </div>
 
       <button type="submit" disabled={loading} className="button button-primary button-block">

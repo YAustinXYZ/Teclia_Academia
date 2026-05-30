@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { Logo } from '../../components/common/Logo.jsx';
+import { statsService } from '../../services/api.js';
 
 const navigation = [
   { label: 'Inicio', href: '#inicio' },
@@ -89,6 +89,13 @@ function LandingPage() {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const audioContextRef = useRef(null);
   const audioStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('tecliaVisitCounted')) return;
+    statsService.recordVisit()
+      .then(() => sessionStorage.setItem('tecliaVisitCounted', '1'))
+      .catch(() => {});
+  }, []);
 
   const selectedScaleNotes = useMemo(() => {
     const allNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -252,9 +259,6 @@ function LandingPage() {
   return (
     <div className="page-shell">
       <header className="topbar" id="inicio">
-        <div className="brand logo-brand">
-          <Logo size={36} />
-        </div>
         <nav className="nav-links">
           {navigation.map((link) => (
             <a key={link.href} href={link.href}>
@@ -557,7 +561,6 @@ function LandingPage() {
 
       <footer className="footer">
         <div>
-          <p className="footer-logo">Teclia</p>
           <p>© 2026 Teclia. Todos los derechos reservados.</p>
           <p className="footer-copy">Aprendizaje de piano con estilo profesional y contenidos claros.</p>
         </div>

@@ -1,26 +1,58 @@
+import jwt from 'jsonwebtoken';
 import { getDb, saveDatabase } from '../db/init.js';
+import { canAccessPlan, PLAN_TIERS } from '../utils/plans.js';
+
+const parseOptionalUser = (req) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return null;
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    return null;
+  }
+};
+
+const getUserAccess = (userId) => {
+  const db = getDb();
+  const result = db.exec('SELECT role, plan_tier FROM users WHERE id = ?', [userId]);
+  if (result.length === 0 || result[0].values.length === 0) return null;
+  return { role: result[0].values[0][0], plan_tier: result[0].values[0][1] };
+};
+
+const mapContentRows = (result) => {
+  if (result.length === 0) return [];
+  const columns = result[0].columns;
+  return result[0].values.map((row) => {
+    const obj = {};
+    columns.forEach((col, idx) => {
+      obj[col] = row[idx];
+    });
+    obj.plan_tier = obj.plan_tier || (obj.is_free ? 'free' : 'basico');
+    return obj;
+  });
+};
+
+const filterContentForUser = (content, access) => {
+  if (!access) {
+    return content.filter((item) => (item.plan_tier || 'free') === 'free');
+  }
+  if (access.role === 'admin') return content;
+  return content.filter((item) => canAccessPlan(access.plan_tier, item.plan_tier || 'free'));
+};
 
 export const getContent = (req, res) => {
   try {
     const db = getDb();
-
     const result = db.exec(`
       SELECT c.*, u.name as uploaded_by_name FROM content c
       LEFT JOIN users u ON c.uploaded_by = u.id
       ORDER BY c.created_at DESC
     `);
 
-    let content = [];
-    if (result.length > 0) {
-      const columns = result[0].columns;
-      content = result[0].values.map(row => {
-        const obj = {};
-        columns.forEach((col, idx) => {
-          obj[col] = row[idx];
-        });
-        return obj;
-      });
-    }
+    const allContent = mapContentRows(result);
+    const tokenUser = parseOptionalUser(req);
+    const access = tokenUser ? getUserAccess(tokenUser.id) : null;
+    const content = filterContentForUser(allContent, access);
 
     res.json({ content });
   } catch (err) {
@@ -44,11 +76,13 @@ export const getContentById = (req, res) => {
       return res.status(404).json({ error: 'Content not found' });
     }
 
-    const columns = result[0].columns;
-    const content = {};
-    columns.forEach((col, idx) => {
-      content[col] = result[0].values[0][idx];
-    });
+    const content = mapContentRows(result)[0];
+    const tokenUser = parseOptionalUser(req);
+    const access = tokenUser ? getUserAccess(tokenUser.id) : null;
+
+    if (!filterContentForUser([content], access).length) {
+      return res.status(403).json({ error: 'No tienes acceso a este contenido con tu plan actual' });
+    }
 
     res.json({ content });
   } catch (err) {
@@ -58,9 +92,8 @@ export const getContentById = (req, res) => {
 
 export const uploadContent = (req, res) => {
   try {
-    const { title, description, type, url, is_free } = req.body;
+    const { title, description, type, url, is_free, plan_tier } = req.body;
 
-    // If a file was uploaded via multer, construct its public URL
     let finalUrl = url;
     if (req.file) {
       const host = req.get('host');
@@ -72,6 +105,11 @@ export const uploadContent = (req, res) => {
       return res.status(400).json({ error: 'Title, type and url/file are required' });
     }
 
+    const selectedPlan = plan_tier || (is_free === '1' || is_free === 'true' || is_free === 'on' ? 'free' : 'basico');
+    if (!PLAN_TIERS.includes(selectedPlan)) {
+      return res.status(400).json({ error: 'Plan de contenido no válido' });
+    }
+
     const db = getDb();
     const uploaderId = req.user?.id;
 
@@ -79,11 +117,11 @@ export const uploadContent = (req, res) => {
       return res.status(401).json({ error: 'Uploader not identified' });
     }
 
-    const freeFlag = is_free === '1' || is_free === 'true' || is_free === 'on' ? 1 : 0;
+    const freeFlag = selectedPlan === 'free' ? 1 : 0;
 
     db.run(
-      'INSERT INTO content (title, description, type, url, is_free, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)',
-      [title, description || '', type, finalUrl, freeFlag, uploaderId]
+      'INSERT INTO content (title, description, type, url, is_free, plan_tier, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [title, description || '', type, finalUrl, freeFlag, selectedPlan, uploaderId]
     );
 
     saveDatabase();
@@ -98,8 +136,9 @@ export const uploadContent = (req, res) => {
       type,
       url: finalUrl,
       is_free: freeFlag,
+      plan_tier: selectedPlan,
       uploaded_by: uploaderId,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
     res.json({ message: 'Content uploaded', content });
@@ -113,7 +152,6 @@ export const deleteContent = (req, res) => {
     const { id } = req.params;
     const db = getDb();
 
-    // Ensure content exists
     const found = db.exec('SELECT id FROM content WHERE id = ?', [id]);
     if (found.length === 0 || found[0].values.length === 0) {
       return res.status(404).json({ error: 'Content not found' });
@@ -135,25 +173,12 @@ export const getFreeContent = (req, res) => {
     const result = db.exec(`
       SELECT c.*, u.name as uploaded_by_name FROM content c
       LEFT JOIN users u ON c.uploaded_by = u.id
-      WHERE c.is_free = 1
+      WHERE c.plan_tier = 'free' OR c.is_free = 1
       ORDER BY c.created_at DESC
     `);
 
-    let content = [];
-    if (result.length > 0) {
-      const columns = result[0].columns;
-      content = result[0].values.map(row => {
-        const obj = {};
-        columns.forEach((col, idx) => {
-          obj[col] = row[idx];
-        });
-        return obj;
-      });
-    }
-
-    res.json({ content });
+    res.json({ content: mapContentRows(result) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-

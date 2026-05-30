@@ -48,6 +48,19 @@ export const authService = {
     api.post('/auth/forgot-password', { email }),
   resetPassword: (email, pin, newPassword) =>
     api.post('/auth/reset-password', { email, pin, newPassword }),
+  verifyRecoveryEmail: (email) =>
+    api.post('/auth/verify-recovery-email', { email }),
+  getStudents: () =>
+    api.get('/auth/students'),
+  updateStudentPlan: (studentId, planTier) =>
+    api.patch(`/auth/students/${studentId}/plan`, { plan_tier: planTier }),
+  deleteStudent: (studentId) =>
+    api.delete(`/auth/students/${studentId}`),
+};
+
+export const statsService = {
+  recordVisit: () => api.post('/stats/visit'),
+  getVisitStats: () => api.get('/stats/visits'),
 };
 
 export const contentService = {

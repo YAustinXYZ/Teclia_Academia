@@ -1,12 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { Logo } from './Logo.jsx';
+import { resolveAvatar } from '../../utils/avatar.js';
+import { planLabel } from '../../utils/plans.js';
 import { useState } from 'react';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const avatarSrc = resolveAvatar(user?.avatar_url || '');
 
   const handleLogout = () => {
     logout();
@@ -16,8 +20,8 @@ export const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-brand">
-          
+        <Link to="/" className="navbar-brand" title="Volver al inicio">
+          <Logo size={36} showTagline={false} />
         </Link>
 
         <div className="navbar-menu">
@@ -28,17 +32,34 @@ export const Navbar = () => {
                 {user.role === 'admin' && (
                   <>
                     <Link to="/admin" className="button button-ghost">Mi escuela</Link>
+                    <Link to="/admin/students" className="button button-ghost">Estudiantes</Link>
                     <Link to="/admin/upload" className="button button-ghost">Gestionar contenido</Link>
                   </>
                 )}
               </div>
               <span className="user-role">
-                {user.role === 'admin' ? '👑 Instructor' : user.role === 'premium' ? '✨ Alumno premium' : '🎓 Estudiante'}
+                {user.role === 'admin'
+                  ? '👑 Instructor'
+                  : user.plan_tier
+                    ? `✨ ${planLabel(user.plan_tier)}`
+                    : user.role === 'premium'
+                      ? '✨ Alumno premium'
+                      : '🎓 Estudiante'}
               </span>
-              
+
+              <Link to="/profile" className="navbar-avatar-link" title="Mi perfil">
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="Foto de perfil" className="navbar-avatar" />
+                ) : (
+                  <span className="navbar-avatar navbar-avatar-placeholder">
+                    {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                )}
+              </Link>
+
               <div className="settings-dropdown-container">
-                <button 
-                  className="button button-settings" 
+                <button
+                  className="button button-settings"
                   title="Configuración"
                   onClick={() => setSettingsOpen(!settingsOpen)}
                 >
@@ -56,8 +77,8 @@ export const Navbar = () => {
                       ⭐ Suscripción
                     </Link>
                     <div className="settings-divider"></div>
-                    <button 
-                      className="settings-option logout-option" 
+                    <button
+                      className="settings-option logout-option"
                       onClick={() => {
                         handleLogout();
                         setSettingsOpen(false);

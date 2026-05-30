@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Sidebar } from '../../components/common/Sidebar.jsx';
 import { Icon } from '../../components/common/Icons.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { statsService } from '../../services/api.js';
 
 export const AdminDashboardPage = () => {
   const { content } = useContent();
   const { user } = useAuth();
+  const [pageVisits, setPageVisits] = useState(0);
+  const [studentCount, setStudentCount] = useState(0);
 
   const recentContent = content.slice(0, 5);
   const stats = {
@@ -14,6 +18,16 @@ export const AdminDashboardPage = () => {
     videos: content.filter(c => c.type === 'video').length,
     pdfs: content.filter(c => c.type === 'pdf').length,
   };
+
+  useEffect(() => {
+    statsService
+      .getVisitStats()
+      .then((res) => {
+        setPageVisits(res.data.pageVisits || 0);
+        setStudentCount(res.data.studentCount || 0);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="dashboard-layout">
@@ -47,12 +61,25 @@ export const AdminDashboardPage = () => {
             <h3>Gestor de contenido</h3>
             <p>Revisa y administra todos los recursos publicados.</p>
           </Link>
+          <Link to="/admin/students" className="action-card">
+            <div className="action-icon">👥</div>
+            <h3>Estudiantes</h3>
+            <p>Consulta alumnos registrados, correos, categoría y fotos.</p>
+          </Link>
         </div>
 
         <div className="admin-stats">
           <h2>Resumen del panel</h2>
           <div className="stats-grid">
             <div className="stat-card highlight">
+              <div className="stat-value">{pageVisits}</div>
+              <div className="stat-label">Visitas a la página</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{studentCount}</div>
+              <div className="stat-label">Estudiantes</div>
+            </div>
+            <div className="stat-card">
               <div className="stat-value">{stats.total}</div>
               <div className="stat-label">Contenidos</div>
             </div>

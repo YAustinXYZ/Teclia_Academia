@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/api.js';
+import { validatePassword, PASSWORD_HINT } from '../../utils/password.js';
 
 export const ResetPasswordPage = () => {
   const location = useLocation();
@@ -20,6 +21,11 @@ export const ResetPasswordPage = () => {
     setError(null);
 
     try {
+      const passwordError = validatePassword(newPassword);
+      if (passwordError) {
+        setError(passwordError);
+        return;
+      }
       await authService.resetPassword(email, pin, newPassword);
       setMessage('Contraseña restablecida correctamente. Redirigiendo al login...');
       setTimeout(() => navigate('/auth/login'), 1300);

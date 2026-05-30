@@ -1,21 +1,34 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { authService } from '../services/api.js';
+import { getStoredAvatar, storeAvatar } from '../utils/avatar.js';
 
 const AuthContext = createContext();
+
+const enrichUser = (user) => {
+  if (!user) return null;
+  const storedAvatar = getStoredAvatar(user.id);
+  return {
+    ...user,
+    avatar_url: user.avatar_url || storedAvatar || null,
+  };
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check if user is logged in on mount
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       authService
         .getCurrentUser()
         .then((res) => {
-          setUser(res.data.user);
+          const enriched = enrichUser(res.data.user);
+          if (enriched?.avatar_url) {
+            storeAvatar(enriched.id, enriched.avatar_url);
+          }
+          setUser(enriched);
           setError(null);
         })
         .catch(() => {
@@ -33,9 +46,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-      const res = await authService.login(email, password);
+      const normalizedEmail = email.trim().toLowerCase();
+      const res = await authService.login(normalizedEmail, password);
       localStorage.setItem('authToken', res.data.token);
-      setUser(res.data.user);
+      localStorage.setItem('lastLoginEmail', normalizedEmail);
+      const enriched = enrichUser(res.data.user);
+      if (enriched?.avatar_url) {
+        storeAvatar(enriched.id, enriched.avatar_url);
+      }
+      setUser(enriched);
       return res.data;
     } catch (err) {
       const message = err.response?.data?.error || 'Login failed';
@@ -47,9 +66,12 @@ export const AuthProvider = ({ children }) => {
   const signup = async (email, password, name) => {
     try {
       setError(null);
-      const res = await authService.signup(email, password, name);
+      const normalizedEmail = email.trim().toLowerCase();
+      const res = await authService.signup(normalizedEmail, password, name);
       localStorage.setItem('authToken', res.data.token);
-      setUser(res.data.user);
+      localStorage.setItem('lastLoginEmail', normalizedEmail);
+      const enriched = enrichUser(res.data.user);
+      setUser(enriched);
       return res.data;
     } catch (err) {
       const message = err.response?.data?.error || 'Signup failed';
@@ -62,7 +84,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const res = await authService.updateProfile(name, avatarUrl);
-      setUser(res.data.user);
+      const enriched = enrichUser(res.data.user);
+      if (enriched?.avatar_url) {
+        storeAvatar(enriched.id, enriched.avatar_url);
+      }
+      setUser(enriched);
       return res.data;
     } catch (err) {
       const message = err.response?.data?.error || 'Profile update failed';

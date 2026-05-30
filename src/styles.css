@@ -45,7 +45,7 @@ button {
   justify-content: center;
   align-items: center;
   gap: 1.5rem;
-  padding: 1rem 0;
+  padding: 0.5rem 0 1rem;
 }
 
 .brand,
@@ -943,6 +943,125 @@ h1 {
 .content-table { width: 100%; border-collapse: collapse; min-width: 760px; }
 .content-table thead th { text-align: left; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); font-size: 0.9rem; }
 .content-table tbody td { padding: 0.75rem 1rem; border-top: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
+
+.input-readonly {
+  opacity: 0.85;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.students-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.students-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: #b0b0b0;
+}
+
+.students-count {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #c9a84c;
+}
+
+.student-table-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(201, 168, 76, 0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-table-avatar-placeholder {
+  background: rgba(201, 168, 76, 0.15);
+  color: #c9a84c;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.role-badge-student {
+  color: #9ecbff;
+}
+
+.role-badge-premium {
+  color: #c9a84c;
+}
+
+.role-badge-basico,
+.role-badge-pro,
+.role-badge-master {
+  color: #c9a84c;
+}
+
+.plan-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.65rem;
+  color: #f5f5f5;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.9rem;
+  min-width: 160px;
+  color-scheme: dark;
+}
+
+.plan-select option {
+  background: #141414;
+  color: #f5f5f5;
+}
+
+.students-table td,
+.students-table th {
+  color: #f0f0f0;
+}
+
+.plan-assign-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 280px;
+}
+
+.plan-assign-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #e8e8e8;
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.65rem;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.plan-assign-btn:hover:not(:disabled) {
+  background: rgba(201, 168, 76, 0.14);
+  border-color: rgba(201, 168, 76, 0.45);
+  color: #f5f5f5;
+}
+
+.plan-assign-btn.active {
+  background: rgba(201, 168, 76, 0.22);
+  border-color: #c9a84c;
+  color: #f8e7b0;
+  font-weight: 700;
+}
+
+.plan-assign-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.field-hint {
+  margin: 0.35rem 0 0;
+  color: #9a9a9a;
+  font-size: 0.82rem;
+}
 .td-title-inner { display:flex; gap:0.75rem; align-items:center; }
 .content-icon-inline { width:40px; height:40px; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.02); border-radius:8px; }
 .row-title { font-weight:700; }
@@ -1238,6 +1357,46 @@ h1 {
   align-items: center;
   gap: 0.9rem;
   text-decoration: none;
+  color: inherit;
+}
+
+.navbar-brand .brand-logo {
+  width: 36px;
+  height: 36px;
+}
+
+.navbar-brand .brand-name {
+  font-size: 1.05rem;
+}
+
+.navbar-avatar-link {
+  display: inline-flex;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.navbar-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(201, 168, 76, 0.55);
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.navbar-avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201, 168, 76, 0.18);
+  color: #c9a84c;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.navbar-avatar-link:hover .navbar-avatar {
+  border-color: #e5c158;
+  transform: scale(1.05);
 }
 
 .navbar-menu {
@@ -1837,7 +1996,20 @@ h1 {
   font-size: 0.95rem;
 }
 
-.auth-link-row a:hover {
+.auth-link-row .link-button,
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #d9d9d9;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.auth-link-row .link-button:hover,
+.link-button:hover {
   color: #ffffff;
 }
 

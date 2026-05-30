@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '../common/Icons.jsx';
+import { planLabel } from '../../utils/plans.js';
 
 export const ContentGrid = ({ content, onDelete, isAdmin = false }) => {
   const [filter, setFilter] = useState('all');
@@ -40,7 +41,7 @@ export const ContentGrid = ({ content, onDelete, isAdmin = false }) => {
                   <th>Título</th>
                   <th>Tipo</th>
                   <th>Autor</th>
-                  <th>Gratis</th>
+                  <th>Plan</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -58,7 +59,7 @@ export const ContentGrid = ({ content, onDelete, isAdmin = false }) => {
                     </td>
                     <td><span className="badge small">{item.type.toUpperCase()}</span></td>
                     <td>{item.uploaded_by_name}</td>
-                    <td>{item.is_free ? <span className="badge small success">Sí</span> : '—'}</td>
+                    <td><span className="badge small">{planLabel(item.plan_tier || (item.is_free ? 'free' : 'basico'))}</span></td>
                     <td className="td-actions">
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="button button-secondary small">Ver</a>
                       <button onClick={() => onDelete(item.id)} className="button button-danger small">Eliminar</button>

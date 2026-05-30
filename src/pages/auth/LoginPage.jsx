@@ -1,16 +1,27 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 
 export const LoginPage = () => {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(location.state?.message || null);
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleForgotPassword = () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError('Primero ingresa tu correo electrónico para acceder a la recuperación de contraseña.');
+      return;
+    }
+    sessionStorage.setItem('recoveryEmail', normalizedEmail);
+    navigate('/auth/forgot-password', { state: { email: normalizedEmail } });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +30,7 @@ export const LoginPage = () => {
 
     try {
       await login(email, password);
+      sessionStorage.removeItem('recoveryEmail');
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
@@ -71,7 +83,9 @@ export const LoginPage = () => {
             </div>
 
             <div className="auth-link-row">
-              <Link to="/auth/forgot-password">¿Olvidaste tu contraseña?</Link>
+              <button type="button" className="link-button" onClick={handleForgotPassword}>
+                ¿Olvidaste tu contraseña?
+              </button>
             </div>
 
             <button type="submit" disabled={loading} className="button button-primary button-block">

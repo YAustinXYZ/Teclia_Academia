@@ -11,6 +11,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminUploadPage from './pages/admin/AdminUploadPage.jsx';
 import AdminContentPage from './pages/admin/AdminContentPage.jsx';
+import AdminStudentsPage from './pages/admin/AdminStudentsPage.jsx';
 import FreeResources from './pages/public/FreeResources.jsx';
 import ProfilePage from './pages/dashboard/ProfilePage.jsx';
 import RecursosPage from './pages/dashboard/RecursosPage.jsx';
@@ -70,6 +71,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <AdminContentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/students"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminStudentsPage />
               </ProtectedRoute>
             }
           />

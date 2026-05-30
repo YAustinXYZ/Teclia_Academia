@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+import { validatePassword, PASSWORD_HINT } from '../../utils/password.js';
 
 export const SignupPage = () => {
   const [name, setName] = useState('');
@@ -24,8 +25,9 @@ export const SignupPage = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -94,6 +96,7 @@ export const SignupPage = () => {
                   {showPassword ? '🙈' : '👁️'}
                 </button>
               </div>
+              <p className="field-hint">{PASSWORD_HINT}</p>
             </div>
 
             <div className="form-group password-group">

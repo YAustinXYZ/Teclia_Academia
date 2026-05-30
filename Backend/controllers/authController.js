@@ -1,7 +1,23 @@
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import sgMail from '@sendgrid/mail';
+import fs from 'fs';
+import path from 'path';
 import { getDb, saveDatabase } from '../db/init.js';
+import { getUploadsPath } from '../config/uploads.js';
+import { validatePassword } from '../utils/password.js';
+import { listNonAdminUsers, mapUserRows, normalizeLegacyUsers, ensureUserColumn } from '../utils/dbUsers.js';
+
+const normalizeEmail = (email) => email.trim().toLowerCase();
+
+const formatUser = (user) => ({
+  id: user.id,
+  email: user.email,
+  name: user.name,
+  role: user.role,
+  plan_tier: user.plan_tier || null,
+  avatar_url: user.avatar_url || null,
+});
 
 const generateToken = (userId, role) => {
   return jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
@@ -50,9 +66,15 @@ export const signup = (req, res) => {
       return res.status(400).json({ error: 'Email, password, and name are required' });
     }
 
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
     const db = getDb();
 
-    const existingUser = db.exec('SELECT id FROM users WHERE email = ?', [email]);
+    const existingUser = db.exec('SELECT id FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
     if (existingUser.length > 0 && existingUser[0].values.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -61,7 +83,7 @@ export const signup = (req, res) => {
 
     db.run(
       'INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)',
-      [email, hashedPassword, name, 'student']
+      [normalizedEmail, hashedPassword, name, 'student']
     );
 
     saveDatabase();
@@ -73,7 +95,7 @@ export const signup = (req, res) => {
     res.json({
       message: 'User created successfully',
       token,
-      user: { id: userId, email, name, role: 'student' }
+      user: { id: userId, email: normalizedEmail, name, role: 'student', avatar_url: null }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -88,10 +110,11 @@ export const login = (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    const normalizedEmail = normalizeEmail(email);
     const db = getDb();
     const result = db.exec(
-      'SELECT id, email, name, password_hash, role FROM users WHERE email = ?',
-      [email]
+      'SELECT id, email, name, password_hash, role, plan_tier, avatar_url FROM users WHERE LOWER(email) = ?',
+      [normalizedEmail]
     );
 
     if (result.length === 0 || result[0].values.length === 0) {
@@ -115,7 +138,7 @@ export const login = (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role }
+      user: formatUser(user)
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -125,7 +148,7 @@ export const login = (req, res) => {
 export const getMe = (req, res) => {
   try {
     const db = getDb();
-    const result = db.exec('SELECT id, email, name, role, avatar_url FROM users WHERE id = ?', [req.user.id]);
+    const result = db.exec('SELECT id, email, name, role, plan_tier, avatar_url FROM users WHERE id = ?', [req.user.id]);
     if (result.length === 0 || result[0].values.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -150,10 +173,15 @@ export const updateProfile = (req, res) => {
     }
 
     const db = getDb();
-    const result = db.exec('SELECT id, email, name, role, avatar_url FROM users WHERE id = ?', [req.user.id]);
+    const result = db.exec('SELECT id, email, name, role, plan_tier, avatar_url FROM users WHERE id = ?', [req.user.id]);
     if (result.length === 0 || result[0].values.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+    const cols = result[0].columns;
+    const vals = result[0].values[0];
+    const currentUser = {};
+    cols.forEach((c, i) => (currentUser[c] = vals[i]));
 
     const updates = [];
     const params = [];
@@ -162,6 +190,12 @@ export const updateProfile = (req, res) => {
       params.push(name);
     }
     if (avatarFile) {
+      if (currentUser.avatar_url) {
+        const oldPath = path.join(getUploadsPath(), currentUser.avatar_url.replace(/^\/uploads\//, ''));
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
       const publicPath = `/uploads/avatars/${avatarFile.filename}`;
       updates.push('avatar_url = ?');
       params.push(publicPath);
@@ -174,13 +208,13 @@ export const updateProfile = (req, res) => {
     db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
     saveDatabase();
 
-    const updatedResult = db.exec('SELECT id, email, name, role, avatar_url FROM users WHERE id = ?', [req.user.id]);
-    const cols = updatedResult[0].columns;
-    const vals = updatedResult[0].values[0];
+    const updatedResult = db.exec('SELECT id, email, name, role, plan_tier, avatar_url FROM users WHERE id = ?', [req.user.id]);
+    const updatedCols = updatedResult[0].columns;
+    const updatedVals = updatedResult[0].values[0];
     const user = {};
-    cols.forEach((c, i) => (user[c] = vals[i]));
+    updatedCols.forEach((c, i) => (user[c] = updatedVals[i]));
 
-    res.json({ message: 'Profile updated successfully', user });
+    res.json({ message: 'Profile updated successfully', user: formatUser(user) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -191,6 +225,11 @@ export const changePassword = (req, res) => {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Current and new password are required' });
+    }
+
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
     }
 
     const db = getDb();
@@ -221,19 +260,24 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
+    const normalizedEmail = normalizeEmail(email);
     const db = getDb();
-    const result = db.exec('SELECT id FROM users WHERE email = ?', [email]);
+    const result = db.exec('SELECT id, email FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
     if (result.length === 0 || result[0].values.length === 0) {
-      return res.status(200).json({ message: 'If that email exists, a reset PIN was sent.' });
+      return res.status(404).json({
+        error: 'Este correo no está registrado. Debes usar el mismo correo con el que iniciaste sesión.',
+      });
     }
 
+    const userId = result[0].values[0][0];
+    const registeredEmail = result[0].values[0][1];
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-    db.run('UPDATE users SET reset_pin = ?, reset_pin_expires_at = ? WHERE email = ?', [pin, expiresAt, email]);
+    db.run('UPDATE users SET reset_pin = ?, reset_pin_expires_at = ? WHERE id = ?', [pin, expiresAt, userId]);
     saveDatabase();
 
-    await sendResetPinEmail(email, pin);
+    await sendResetPinEmail(registeredEmail, pin);
 
     res.json({ message: 'Se ha enviado un PIN de recuperación al correo electrónico' });
   } catch (err) {
@@ -248,13 +292,19 @@ export const resetPassword = (req, res) => {
       return res.status(400).json({ error: 'Email, PIN y nueva contraseña son requeridos' });
     }
 
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
     const db = getDb();
     const result = db.exec(
-      'SELECT reset_pin, reset_pin_expires_at FROM users WHERE email = ?',
-      [email]
+      'SELECT reset_pin, reset_pin_expires_at FROM users WHERE LOWER(email) = ?',
+      [normalizedEmail]
     );
     if (result.length === 0 || result[0].values.length === 0) {
-      return res.status(404).json({ error: 'Email no registrado' });
+      return res.status(404).json({ error: 'Este correo no está registrado. Usa el mismo correo con el que iniciaste sesión.' });
     }
 
     const storedPin = result[0].values[0][0];
@@ -269,8 +319,8 @@ export const resetPassword = (req, res) => {
 
     const hashedPassword = bcryptjs.hashSync(newPassword, 10);
     db.run(
-      'UPDATE users SET password_hash = ?, reset_pin = NULL, reset_pin_expires_at = NULL WHERE email = ?',
-      [hashedPassword, email]
+      'UPDATE users SET password_hash = ?, reset_pin = NULL, reset_pin_expires_at = NULL WHERE LOWER(email) = ?',
+      [hashedPassword, normalizedEmail]
     );
     saveDatabase();
 
@@ -282,4 +332,123 @@ export const resetPassword = (req, res) => {
 
 export const logout = (req, res) => {
   res.json({ message: 'Logout successful' });
+};
+
+export const verifyRecoveryEmail = (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'El correo es obligatorio' });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+    const db = getDb();
+    const result = db.exec(
+      'SELECT id, email, name FROM users WHERE LOWER(email) = ?',
+      [normalizedEmail]
+    );
+
+    if (result.length === 0 || result[0].values.length === 0) {
+      return res.status(404).json({
+        error: 'No existe una cuenta registrada con este correo.',
+      });
+    }
+
+    const registeredEmail = result[0].values[0][1];
+    res.json({ verified: true, email: registeredEmail });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const listStudents = (req, res) => {
+  try {
+    const db = getDb();
+    const result = listNonAdminUsers(db);
+    const students = mapUserRows(result, formatUser);
+    res.json({ students });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const updateStudentPlan = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { plan_tier } = req.body;
+
+    if (plan_tier !== null && plan_tier !== '' && !['basico', 'pro', 'master'].includes(plan_tier)) {
+      return res.status(400).json({ error: 'Plan no válido. Opciones: basico, pro, master' });
+    }
+
+    const normalizedPlan = plan_tier === '' || plan_tier === null ? null : plan_tier;
+    const newRole = normalizedPlan ? 'premium' : 'student';
+
+    const db = getDb();
+    normalizeLegacyUsers(db);
+    ensureUserColumn(db, 'plan_tier', 'plan_tier TEXT DEFAULT NULL');
+
+    const found = db.exec('SELECT id, role FROM users WHERE id = ?', [id]);
+    if (found.length === 0 || found[0].values.length === 0) {
+      return res.status(404).json({ error: 'Estudiante no encontrado' });
+    }
+
+    if (found[0].values[0][1] === 'admin') {
+      return res.status(400).json({ error: 'No se puede modificar un administrador' });
+    }
+
+    db.run('UPDATE users SET plan_tier = ?, role = ? WHERE id = ?', [normalizedPlan, newRole, id]);
+    saveDatabase();
+
+    const updated = db.exec(
+      'SELECT id, name, email, role, plan_tier, avatar_url, created_at FROM users WHERE id = ?',
+      [id]
+    );
+    const cols = updated[0].columns;
+    const vals = updated[0].values[0];
+    const student = {};
+    cols.forEach((col, i) => {
+      student[col] = vals[i];
+    });
+
+    res.json({
+      message: normalizedPlan ? `Plan ${normalizedPlan} asignado correctamente` : 'Plan removido correctamente',
+      student: { ...formatUser(student), created_at: student.created_at },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const deleteStudent = (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = getDb();
+
+    const found = db.exec('SELECT id, role, avatar_url FROM users WHERE id = ?', [id]);
+    if (found.length === 0 || found[0].values.length === 0) {
+      return res.status(404).json({ error: 'Estudiante no encontrado' });
+    }
+
+    const role = found[0].values[0][1];
+    const avatarUrl = found[0].values[0][2];
+
+    if (role === 'admin') {
+      return res.status(400).json({ error: 'No se puede eliminar una cuenta de administrador' });
+    }
+
+    if (avatarUrl) {
+      const oldPath = path.join(getUploadsPath(), avatarUrl.replace(/^\/uploads\//, ''));
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    db.run('DELETE FROM users WHERE id = ?', [id]);
+    saveDatabase();
+
+    res.json({ message: 'Cuenta eliminada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

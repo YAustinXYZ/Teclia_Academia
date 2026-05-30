@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
-import { authService, BACKEND_BASE_URL } from '../../services/api.js';
+import { authService } from '../../services/api.js';
+import { resolveAvatar, storeAvatar } from '../../utils/avatar.js';
+import { validatePassword, PASSWORD_HINT } from '../../utils/password.js';
+import { planLabel } from '../../utils/plans.js';
 
 const pciSafeCard = (value) => value.replace(/[^0-9]/g, '');
 const isValidLuhn = (cardNumber) => {
@@ -44,16 +47,7 @@ export const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [name, setName] = useState(user?.name || '');
 
-  const resolveAvatar = (value) => {
-    if (!value) return '';
-    if (value.startsWith('http') || value.startsWith('data:')) return value;
-    return `${BACKEND_BASE_URL}${value}`;
-  };
-
-  const [avatarPreview, setAvatarPreview] = useState(() => {
-    const value = user?.avatar_url || '';
-    return resolveAvatar(value);
-  });
+  const [avatarPreview, setAvatarPreview] = useState(() => resolveAvatar(user?.avatar_url || ''));
   const [avatarFile, setAvatarFile] = useState(null);
   const [profileMessage, setProfileMessage] = useState(null);
   const [profileError, setProfileError] = useState(null);
@@ -92,7 +86,11 @@ export const ProfilePage = () => {
       }
       const res = await updateProfile(name, payload);
       setProfileMessage('Perfil actualizado correctamente.');
-      setAvatarPreview(res.user.avatar_url || avatarPreview);
+      const savedUrl = res.user.avatar_url || '';
+      if (savedUrl) {
+        storeAvatar(res.user.id, savedUrl);
+      }
+      setAvatarPreview(resolveAvatar(savedUrl) || avatarPreview);
       setAvatarFile(null);
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err) {
@@ -110,8 +108,9 @@ export const ProfilePage = () => {
       return;
     }
 
-    if (changePassword.new.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+    const passwordError = validatePassword(changePassword.new);
+    if (passwordError) {
+      setPasswordError(passwordError);
       return;
     }
 
@@ -144,9 +143,11 @@ export const ProfilePage = () => {
 
   const roleLabel = user?.role === 'admin'
     ? '👑 Instructor'
-    : user?.role === 'premium'
-      ? '✨ Premium'
-      : '🎓 Estudiante';
+    : user?.plan_tier
+      ? `✨ ${planLabel(user.plan_tier)}`
+      : user?.role === 'premium'
+        ? '✨ Premium'
+        : '🎓 Estudiante';
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -265,6 +266,7 @@ export const ProfilePage = () => {
                         {showPassword.new ? '🙈' : '👁️'}
                       </button>
                     </div>
+                    <p className="field-hint">{PASSWORD_HINT}</p>
                   </div>
                   <div className="form-group password-group">
                     <label htmlFor="confirm">Confirmar nueva contraseña</label>

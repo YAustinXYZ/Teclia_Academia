@@ -2,6 +2,7 @@ import { Sidebar } from '../../components/common/Sidebar.jsx';
 import { ContentGrid } from '../../components/content/ContentGrid.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
 import axios from 'axios';
+import { BACKEND_BASE_URL } from '../../services/api.js';
 
 export const AdminContentPage = () => {
   const { content, removeContent } = useContent();
@@ -11,7 +12,7 @@ export const AdminContentPage = () => {
       try {
         const token = localStorage.getItem('authToken');
         await axios.delete(
-          `http://localhost:3001/api/content/${id}`,
+          `${BACKEND_BASE_URL}/api/content/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
