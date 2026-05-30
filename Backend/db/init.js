@@ -54,6 +54,22 @@ const removeSeededStudents = () => {
   db.run("DELETE FROM users WHERE LOWER(email) IN ('student1@teclia.com', 'student2@teclia.com', 'admin@teclia.com')");
 };
 
+const purgeLegacyNonAdminUsers = () => {
+  const flag = db.exec("SELECT value FROM site_stats WHERE key = 'production_user_reset_v1'");
+  if (flag.length > 0 && flag[0].values.length > 0) {
+    return;
+  }
+
+  const adminRow = db.exec('SELECT id FROM users WHERE LOWER(email) = ?', [ADMIN_EMAIL]);
+  if (adminRow.length > 0 && adminRow[0].values.length > 0) {
+    const adminId = adminRow[0].values[0][0];
+    db.run('UPDATE content SET uploaded_by = ? WHERE uploaded_by != ?', [adminId, adminId]);
+  }
+
+  db.run("DELETE FROM users WHERE LOWER(COALESCE(role, 'student')) != 'admin'");
+  db.run("INSERT INTO site_stats (key, value) VALUES ('production_user_reset_v1', 1)");
+};
+
 export const initDb = async () => {
   SQL = await initSqlJs();
 
@@ -107,6 +123,7 @@ export const initDb = async () => {
     removeSeededStudents();
     normalizeLegacyUsers(db);
     migrateAdminAccount();
+    purgeLegacyNonAdminUsers();
   } catch (e) {
     console.log('Migration notice:', e.message);
   }
