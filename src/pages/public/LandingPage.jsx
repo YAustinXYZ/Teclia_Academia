@@ -568,7 +568,7 @@ function LandingPage() {
           <a href="#inicio">Inicio</a>
           <a href="#explora">Explora</a>
           <a href="#premium">Premium</a>
-          <a href="#contacto">Contacto</a>
+          <a href="https://www.instagram.com/tecliaacademy?utm_source=qr">Contacto</a>
         </div>
       </footer>
     </div>
