@@ -1,4 +1,3 @@
-import { Sidebar } from '../../components/common/Sidebar.jsx';
 import { UploadForm } from '../../components/content/UploadForm.jsx';
 import { ContentGrid } from '../../components/content/ContentGrid.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
@@ -29,7 +28,6 @@ export const AdminUploadPage = () => {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
       <div className="dashboard-main">
         <div className="dashboard-header">
           <h1>Gestionar contenido</h1>

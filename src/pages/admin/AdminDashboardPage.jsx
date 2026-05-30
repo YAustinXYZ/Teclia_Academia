@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '../../components/common/Sidebar.jsx';
 import { Icon } from '../../components/common/Icons.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -31,7 +30,6 @@ export const AdminDashboardPage = () => {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
       <div className="dashboard-main">
         <div className="dashboard-header">
           <div className="dashboard-header-inner">

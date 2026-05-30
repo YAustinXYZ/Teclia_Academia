@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Sidebar } from '../../components/common/Sidebar.jsx';
 import { authService } from '../../services/api.js';
 import { resolveAvatar } from '../../utils/avatar.js';
 import { planLabel, STUDENT_PLANS } from '../../utils/plans.js';
@@ -67,7 +66,6 @@ export const AdminStudentsPage = () => {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
       <div className="dashboard-main">
         <div className="dashboard-header">
           <h1>Estudiantes registrados</h1>

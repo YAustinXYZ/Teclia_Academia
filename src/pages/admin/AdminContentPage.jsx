@@ -1,4 +1,3 @@
-import { Sidebar } from '../../components/common/Sidebar.jsx';
 import { ContentGrid } from '../../components/content/ContentGrid.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
 import axios from 'axios';
@@ -36,7 +35,6 @@ export const AdminContentPage = () => {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
       <div className="dashboard-main">
         <div className="dashboard-header">
           <h1>Gestor de contenido</h1>

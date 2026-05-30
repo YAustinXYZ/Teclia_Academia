@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { Logo } from './Logo.jsx';
 import { resolveAvatar } from '../../utils/avatar.js';
@@ -8,7 +8,10 @@ import { useState } from 'react';
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const isAdminPath = (path) => location.pathname === path;
 
   const avatarSrc = resolveAvatar(user?.avatar_url || '');
 
@@ -31,9 +34,9 @@ export const Navbar = () => {
                 <Link to="/recursos" className="button button-ghost">Recursos</Link>
                 {user.role === 'admin' && (
                   <>
-                    <Link to="/admin" className="button button-ghost">Mi escuela</Link>
-                    <Link to="/admin/students" className="button button-ghost">Estudiantes</Link>
-                    <Link to="/admin/upload" className="button button-ghost">Gestionar contenido</Link>
+                    <Link to="/admin" className={`button button-ghost ${isAdminPath('/admin') ? 'nav-active' : ''}`}>Mi escuela</Link>
+                    <Link to="/admin/students" className={`button button-ghost ${isAdminPath('/admin/students') ? 'nav-active' : ''}`}>Estudiantes</Link>
+                    <Link to="/admin/upload" className={`button button-ghost ${['/admin/upload', '/admin/content'].includes(location.pathname) ? 'nav-active' : ''}`}>Gestionar contenido</Link>
                   </>
                 )}
               </div>
